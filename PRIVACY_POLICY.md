@@ -14,7 +14,7 @@ When you send a file with Beam, your device connects directly to the recipient's
 
 If a direct connection between two devices cannot be established (for example, both are behind restrictive NATs), iroh's default public relay is used as a path between them. Even in that case, only encrypted QUIC packets pass through the relay — the relay cannot read the file contents.
 
-## Permissions Beam requests
+## Permissions
 
 - **Local Network.** Used to discover devices on the same Wi-Fi via mDNS so you can transfer without going through the internet.
 - **Camera.** Used to scan a QR code shown by another Beam device.
