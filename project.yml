@@ -1,0 +1,55 @@
+name: Beam
+options:
+  bundleIdPrefix: sh.atman
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    DEVELOPMENT_TEAM: "${DEVELOPMENT_TEAM}"  # set via env or override locally
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Beam:
+    type: application
+    platform: iOS
+    sources:
+      - Beam
+    info:
+      path: Beam/Info.plist
+      properties:
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIRequiredDeviceCapabilities:
+          - arm64
+        # Expose the app's Documents/beam folder in the Files app so the
+        # non-Photos receive path is reachable from outside the app.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        # iroh local discovery uses Bonjour over UDP.
+        NSLocalNetworkUsageDescription: "Beam uses your local network to discover and connect to peers on the same Wi-Fi."
+        NSBonjourServices:
+          - _iroh._udp
+        # QR scanner.
+        NSCameraUsageDescription: "Beam uses the camera to scan QR codes from friends."
+        # Reading the photos you pick to send — needed so we can ship the
+        # original HEIC bytes instead of a transcoded JPEG.
+        NSPhotoLibraryUsageDescription: "Beam reads the photos you pick so it can send them in their original quality."
+        # Saving received images / videos to Photos.
+        NSPhotoLibraryAddUsageDescription: "Beam saves received pictures and videos to your Photos library."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: sh.atman.beam
+        PRODUCT_NAME: Beam
+        SWIFT_OBJC_BRIDGING_HEADER: atman/Beam-Bridging-Header.h
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/atman"
+        LIBRARY_SEARCH_PATHS: "$(SRCROOT)/atman"
+        OTHER_LDFLAGS: "-latman"
