@@ -1,0 +1,50 @@
+name: iOS
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build Beam for simulator
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Prepare building Atman bindings
+        run: |
+          rustup target add x86_64-apple-ios aarch64-apple-ios-sim
+          cargo install --force cbindgen
+
+      - name: Install xcodegen
+        run: |
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
+        run: xcodegen
+
+      - name: Build atman static library (simulator x86_64)
+        run: ./build_atman.sh --x86_64
+
+      - name: Build the app for the iOS simulator
+        run: |
+          device=$(xcrun xctrace list devices 2>&1 \
+            | grep -oE 'iPhone.*?[^\(]+' \
+            | head -1 \
+            | awk '{$1=$1;print}' \
+            | sed -e "s/ Simulator$//")
+          xcodebuild build \
+            -scheme Beam \
+            -project Beam.xcodeproj \
+            -destination "platform=iOS Simulator,name=$device,arch=x86_64" \
+            CODE_SIGNING_ALLOWED=NO
