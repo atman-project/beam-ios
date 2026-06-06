@@ -41,6 +41,7 @@ if ! $ARM64 && ! $SIM_ARM64 && ! $X86_64; then
   exit 1
 fi
 
+rm -f $IOS_DIR/atman/atman.h $IOS_DIR/atman/libatman.a
 cp "$ATMAN_DIR/target/atman.h" "$IOS_DIR/atman/atman.h"
 
 if $ARM64 && ! $SIM_ARM64 && ! $X86_64; then
