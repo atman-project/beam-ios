@@ -45,6 +45,10 @@ targets:
         NSPhotoLibraryUsageDescription: "Beam reads the photos you pick so it can send them in their original quality."
         # Saving received images / videos to Photos.
         NSPhotoLibraryAddUsageDescription: "Beam saves received pictures and videos to your Photos library."
+        # We use only iroh/QUIC over standard TLS — exempt under the
+        # default U.S. mass-market crypto exemption — so App Store
+        # Connect stops prompting on every upload.
+        ITSAppUsesNonExemptEncryption: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: sh.atman.beam
