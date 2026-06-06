@@ -269,7 +269,7 @@ struct SendView: View {
                 }
             }
             do {
-                let t = try AtmanBridge.addBlobs(at: urls)
+                let t = try AtmanBridge.sendFiles(at: urls)
                 await MainActor.run {
                     self.ticket = t
                     self.working = false
