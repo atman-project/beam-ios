@@ -20,6 +20,10 @@ targets:
     info:
       path: Beam/Info.plist
       properties:
+        # Home-screen + Settings name, independent of the App Store
+        # Connect "App Name" (registered as "Beam by atman" because the
+        # bare "Beam" was already taken).
+        CFBundleDisplayName: Beam
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
