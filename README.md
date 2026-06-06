@@ -13,7 +13,7 @@ ios/
 └── README.md
 ```
 
-`atman` lives at `../submodules/atman` (git submodule).
+`atman` lives at `./submodules/atman` (git submodule).
 
 ## One-time setup
 
