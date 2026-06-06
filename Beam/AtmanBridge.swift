@@ -30,14 +30,13 @@ enum AtmanBridge {
         let identityHex = try randomHex32()
         let networkKeyHex = try randomHex32()
 
-        let syncmanDir = FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("syncman")
-        try? FileManager.default.createDirectory(at: syncmanDir, withIntermediateDirectories: true)
-
+        // Beam links atman built with `--features blobs` only — no `sync`.
+        // The C ABI's `syncman_dir` arg still exists because cbindgen
+        // doesn't support `--features`, but the arg is unread.
+        // So we pass an empty C string.
         let code = identityHex.withCString { id in
             networkKeyHex.withCString { nk in
-                syncmanDir.path.withCString { dir in
+                "".withCString { dir in
                     run_atman(id, nk, nil, dir, 0)
                 }
             }
@@ -49,8 +48,8 @@ enum AtmanBridge {
     /// Import one or more files into atman's blob store. A single URL
     /// produces a raw ticket; two or more bundle into a HashSeq collection
     /// ticket. The C ABI takes newline-separated paths in one C string.
-    static func addBlobs(at urls: [URL]) throws -> String {
-        precondition(!urls.isEmpty, "addBlobs requires at least one URL")
+    static func sendFiles(at urls: [URL]) throws -> String {
+        precondition(!urls.isEmpty, "sendFiles requires at least one URL")
         let joined = urls.map { $0.path }.joined(separator: "\n")
         let ptr: UnsafeMutablePointer<CChar>? = joined.withCString { p in
             send_atman_blobs_add_files_command(p)
@@ -70,7 +69,7 @@ enum AtmanBridge {
     /// Pull every blob described by `ticket` into `saveDir`. Returns one
     /// URL per saved file (length 1 for a raw ticket, N for a collection).
     /// atman returns newline-separated paths over the C ABI.
-    static func downloadBlob(ticket: String, into saveDir: URL) throws -> [URL] {
+    static func downloadFiles(ticket: String, into saveDir: URL) throws -> [URL] {
         let ptr: UnsafeMutablePointer<CChar>? = ticket.withCString { t in
             saveDir.path.withCString { d in
                 send_atman_blobs_download_files_command(t, d)

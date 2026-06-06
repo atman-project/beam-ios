@@ -157,7 +157,7 @@ struct ReceiveView: View {
                     .appendingPathComponent("beam-staging", isDirectory: true)
                 try? FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
 
-                let staged = try AtmanBridge.downloadBlob(ticket: trimmed, into: staging)
+                let staged = try AtmanBridge.downloadFiles(ticket: trimmed, into: staging)
                 let summary = await PhotoSaver.save(stagedFiles: staged)
                 await MainActor.run {
                     if summary.photosSaved == 0 && summary.documentsSaved == 0,
