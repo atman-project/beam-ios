@@ -54,8 +54,7 @@ targets:
       properties:
         # iroh's local discovery uses raw mDNS multicast (not Apple's
         # Bonjour-managed NWBrowser), so iOS drops the packets unless
-        # this entitlement is present. The developer account is already
-        # approved by Apple for it via the sky-is-the-limit-ios app.
+        # this entitlement is present.
         com.apple.developer.networking.multicast: true
     settings:
       base:
