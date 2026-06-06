@@ -15,6 +15,7 @@ atman/libatman.a
 
 # xcodegen output — regenerated from project.yml
 Beam.xcodeproj/
+Beam/Beam.entitlements
 
 # atman submodule's target dir
 submodules/atman/target/

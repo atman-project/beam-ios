@@ -49,6 +49,13 @@ targets:
         # default U.S. mass-market crypto exemption — so App Store
         # Connect stops prompting on every upload.
         ITSAppUsesNonExemptEncryption: false
+    entitlements:
+      path: Beam/Beam.entitlements
+      properties:
+        # iroh's local discovery uses raw mDNS multicast (not Apple's
+        # Bonjour-managed NWBrowser), so iOS drops the packets unless
+        # this entitlement is present.
+        com.apple.developer.networking.multicast: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: sh.atman.beam
