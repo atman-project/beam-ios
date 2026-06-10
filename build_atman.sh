@@ -41,8 +41,6 @@ if ! $ARM64 && ! $SIM_ARM64 && ! $X86_64; then
   exit 1
 fi
 
-# Nothing in atman/ is tracked anymore, so on a fresh clone (CI) the
-# directory may not exist yet.
 mkdir -p $IOS_DIR/atman
 rm -f $IOS_DIR/atman/libatman.a $IOS_DIR/atman/atman.swift
 rm -rf $IOS_DIR/atman/atmanFFI
