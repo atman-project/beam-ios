@@ -19,10 +19,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Prepare building Atman bindings
-        run: |
-          rustup target add x86_64-apple-ios aarch64-apple-ios-sim
-          cargo install --force cbindgen
+      - name: Add iOS targets
+        run: rustup target add x86_64-apple-ios aarch64-apple-ios-sim
 
       - name: Install xcodegen
         run: |
