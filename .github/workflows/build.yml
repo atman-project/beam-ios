@@ -19,22 +19,21 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Prepare building Atman bindings
-        run: |
-          rustup target add x86_64-apple-ios aarch64-apple-ios-sim
-          cargo install --force cbindgen
+      - name: Add iOS targets
+        run: rustup target add x86_64-apple-ios aarch64-apple-ios-sim
 
       - name: Install xcodegen
-        run: |
-          brew install xcodegen
+        run: brew install xcodegen
+
+      # Must run before `xcodegen` because the generated `atman.swift`
+      # is listed as a project source and xcodegen validates that path.
+      - name: Build atman static library (simulator x86_64)
+        run: ./build_atman.sh --x86_64
 
       - name: Generate Xcode project
         env:
           DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
         run: xcodegen
-
-      - name: Build atman static library (simulator x86_64)
-        run: ./build_atman.sh --x86_64
 
       - name: Build the app for the iOS simulator
         run: |

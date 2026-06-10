@@ -10,8 +10,9 @@ DerivedData/
 *.xcworkspace/xcuserdata
 
 # Built atman artifacts copied in by ./build_atman.sh
-atman/atman.h
 atman/libatman.a
+atman/atman.swift
+atman/atmanFFI/
 
 # xcodegen output — regenerated from project.yml
 Beam.xcodeproj/

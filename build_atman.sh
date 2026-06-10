@@ -41,8 +41,16 @@ if ! $ARM64 && ! $SIM_ARM64 && ! $X86_64; then
   exit 1
 fi
 
-rm -f $IOS_DIR/atman/atman.h $IOS_DIR/atman/libatman.a
-cp "$ATMAN_DIR/target/atman.h" "$IOS_DIR/atman/atman.h"
+mkdir -p $IOS_DIR/atman
+rm -f $IOS_DIR/atman/libatman.a $IOS_DIR/atman/atman.swift
+rm -rf $IOS_DIR/atman/atmanFFI
+
+# Swift's include-path module discovery wants `module.modulemap` (not
+# `atmanFFI.modulemap`), inside a directory named like the module.
+cp "$ATMAN_DIR/target/uniffi-bindings/swift/atman.swift" "$IOS_DIR/atman/atman.swift"
+mkdir -p "$IOS_DIR/atman/atmanFFI"
+cp "$ATMAN_DIR/target/uniffi-bindings/swift/atmanFFI.h" "$IOS_DIR/atman/atmanFFI/atmanFFI.h"
+cp "$ATMAN_DIR/target/uniffi-bindings/swift/atmanFFI.modulemap" "$IOS_DIR/atman/atmanFFI/module.modulemap"
 
 if $ARM64 && ! $SIM_ARM64 && ! $X86_64; then
   cp "$ATMAN_DIR/target/aarch64-apple-ios/$MODE/libatman.a" "$IOS_DIR/atman/libatman.a"
@@ -56,4 +64,5 @@ else
   exit 2
 fi
 
-ls -lh "$IOS_DIR/atman/atman.h" "$IOS_DIR/atman/libatman.a"
+ls -lh "$IOS_DIR/atman/libatman.a" "$IOS_DIR/atman/atman.swift" \
+  "$IOS_DIR/atman/atmanFFI/atmanFFI.h" "$IOS_DIR/atman/atmanFFI/module.modulemap"

@@ -33,7 +33,7 @@ final class AtmanBootstrap: ObservableObject {
     init() {
         Task.detached { [weak self] in
             do {
-                try AtmanBridge.initializeIfNeeded()
+                try await AtmanBridge.shared.initializeIfNeeded()
                 await MainActor.run { self?.state = .ready }
             } catch {
                 let message = (error as? LocalizedError)?.errorDescription
