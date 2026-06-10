@@ -17,6 +17,8 @@ targets:
     platform: iOS
     sources:
       - Beam
+      # UniFFI-generated, gitignored, produced by build_atman.sh.
+      - atman/atman.swift
     info:
       path: Beam/Info.plist
       properties:
@@ -60,7 +62,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: sh.atman.beam
         PRODUCT_NAME: Beam
-        SWIFT_OBJC_BRIDGING_HEADER: atman/Beam-Bridging-Header.h
         HEADER_SEARCH_PATHS: "$(SRCROOT)/atman"
         LIBRARY_SEARCH_PATHS: "$(SRCROOT)/atman"
+        # Lets `atman.swift` resolve `import atmanFFI`.
+        SWIFT_INCLUDE_PATHS: "$(SRCROOT)/atman"
         OTHER_LDFLAGS: "-latman"

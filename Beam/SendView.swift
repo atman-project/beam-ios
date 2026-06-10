@@ -116,7 +116,7 @@ struct SendView: View {
                 .multilineTextAlignment(.center)
         }
         .onReceive(receivedTimer) { _ in
-            receivedCount = AtmanBridge.transferCount(ticket: ticket)
+            Task { receivedCount = await AtmanBridge.shared.transferCount(ticket: ticket) }
         }
     }
 
@@ -269,7 +269,7 @@ struct SendView: View {
                 }
             }
             do {
-                let t = try AtmanBridge.sendFiles(at: urls)
+                let t = try await AtmanBridge.shared.sendFiles(at: urls)
                 await MainActor.run {
                     self.ticket = t
                     self.working = false
