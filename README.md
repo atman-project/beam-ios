@@ -2,6 +2,16 @@
 
 Native Swift app that consumes `atman` as a C-ABI static library.
 
+<p align="center">
+  <a href="https://apps.apple.com/app/id6777431954">
+    <img
+      src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+      alt="Download on the App Store"
+      height="60">
+  </a>
+</p>
+
+
 ## Layout
 
 ```
