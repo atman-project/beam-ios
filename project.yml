@@ -67,3 +67,11 @@ targets:
         # Lets `atman.swift` resolve `import atmanFFI`.
         SWIFT_INCLUDE_PATHS: "$(SRCROOT)/atman"
         OTHER_LDFLAGS: "-latman"
+    dependencies:
+      # iroh 1.0 reads system proxy config via `SCDynamicStoreCopyProxies`,
+      # which lives in SystemConfiguration.framework.
+      - sdk: SystemConfiguration.framework
+      # netdev (transitive through iroh 1.0) uses Apple's Network.framework
+      # (`nw_path_monitor_*`, `nw_endpoint_*`, `nw_interface_*`) to enumerate
+      # network interfaces on iOS simulators.
+      - sdk: Network.framework
