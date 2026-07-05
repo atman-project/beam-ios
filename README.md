@@ -65,3 +65,13 @@ up via the `HEADER_SEARCH_PATHS` / `LIBRARY_SEARCH_PATHS` settings.
 ```
 open Beam.xcodeproj
 ```
+
+## Build Beam for publication
+
+Build `atman` with `--release`, and open `Beam.xcodeproj` as described above.
+
+Then in Xcode,
+- Destination: `Any iOS Device (arm64)`
+- Menu: `Product` → `Archive`
+- When Organizer opens: `Distribute App` → `App Store Connect` → `Upload`
+- Xocde signs with the automatic profile tied to the team ID you specified for `xcodegen`.
