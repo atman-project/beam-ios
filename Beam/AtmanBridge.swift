@@ -45,14 +45,18 @@ actor AtmanBridge {
         return (try? await client.transferCount(ticket: ticket)) ?? 0
     }
 
-    func downloadFiles(ticket: String, into saveDir: URL) async throws -> [URL] {
+    func downloadFiles(
+        ticket: String,
+        into saveDir: URL,
+        onProgress: (@Sendable (UInt64) -> Void)? = nil
+    ) async throws -> [URL] {
         guard let client else { throw Error.notInitialized }
-        // TODO: bubble progress up to the UI (e.g. accept a listener param
-        // and pipe events into a ReceiveView progress bar).
+        let listener: DownloadProgressListener = onProgress.map(ProgressCallbackListener.init)
+            ?? NoOpProgressListener()
         let paths = try await client.downloadFiles(
             ticket: ticket,
             saveDir: saveDir.path,
-            progressListener: NoOpProgressListener()
+            progressListener: listener
         )
         return paths.map { URL(fileURLWithPath: $0) }
     }
@@ -67,8 +71,19 @@ actor AtmanBridge {
     }
 }
 
-/// Placeholder listener passed to `downloadFiles` until progress is wired to
-/// the UI. See the TODO in `AtmanBridge.downloadFiles`.
 private final class NoOpProgressListener: DownloadProgressListener {
     func onProgress(progress: DownloadProgress) {}
+}
+
+private final class ProgressCallbackListener: DownloadProgressListener {
+    private let callback: @Sendable (UInt64) -> Void
+
+    init(_ callback: @escaping @Sendable (UInt64) -> Void) {
+        self.callback = callback
+    }
+
+    func onProgress(progress: DownloadProgress) {
+        guard case .bytes(let downloaded) = progress else { return }
+        callback(downloaded)
+    }
 }
