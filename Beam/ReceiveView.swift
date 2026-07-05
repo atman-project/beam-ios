@@ -115,7 +115,7 @@ struct ReceiveView: View {
         }
     }
 
-    /// "1.23 MB · 450 KB/s". Rate is a rolling average since transfer start;
+    /// "1.23 MB (450 KB/s)". Rate is a rolling average since transfer start;
     /// hidden for the first ~500ms so the first sample doesn't show a wild
     /// figure.
     private var progressLabel: String {
@@ -125,7 +125,7 @@ struct ReceiveView: View {
         guard elapsed >= 0.5 else { return bytes }
         let bytesPerSec = Double(bytesReceived) / elapsed
         let rate = Self.byteFormatter.string(fromByteCount: Int64(bytesPerSec))
-        return "\(bytes) · \(rate)/s"
+        return "\(bytes) (\(rate)/s)"
     }
 
     private var resultAlertTitle: String {
