@@ -5,9 +5,19 @@ struct ReceiveView: View {
     @State private var manualTicket = ""
     @State private var scanning = false
     @State private var working = false
+    @State private var bytesReceived: UInt64 = 0
+    @State private var transferStart: Date?
+    @State private var transferTask: Task<Void, Never>?
     @State private var result: SaveOutcome?
     @State private var errorMessage: String?
     @FocusState private var ticketFieldFocused: Bool
+
+    /// Native byte formatter for the "Receiving 1.23 MB" text.
+    private static let byteFormatter: ByteCountFormatter = {
+        let f = ByteCountFormatter()
+        f.countStyle = .file
+        return f
+    }()
 
     /// What we ended up writing across a (possibly multi-file) transfer.
     /// Drives the post-receive alert: photo count steers the Photos button,
@@ -54,11 +64,6 @@ struct ReceiveView: View {
                         .disabled(working)
                     }
 
-                    if working {
-                        ProgressView("Receiving…")
-                            .foregroundStyle(.secondary)
-                    }
-
                     if let errorMessage {
                         Label(errorMessage, systemImage: "exclamationmark.triangle")
                             .foregroundStyle(.red)
@@ -79,6 +84,18 @@ struct ReceiveView: View {
                     }
                 }
             }
+            .sheet(isPresented: $working) {
+                TransferSheet(
+                    label: progressLabel,
+                    onCancel: {
+                        transferTask?.cancel()
+                        working = false
+                    }
+                )
+                .presentationDetents([.height(240)])
+                .presentationDragIndicator(.hidden)
+                .interactiveDismissDisabled()
+            }
             .alert(
                 resultAlertTitle,
                 isPresented: Binding(
@@ -98,6 +115,19 @@ struct ReceiveView: View {
         }
     }
 
+    /// "1.23 MB (450 KB/s)". Rate is a rolling average since transfer start;
+    /// hidden for the first ~500ms so the first sample doesn't show a wild
+    /// figure.
+    private var progressLabel: String {
+        let bytes = Self.byteFormatter.string(fromByteCount: Int64(bytesReceived))
+        guard bytesReceived > 0, let start = transferStart else { return bytes }
+        let elapsed = Date().timeIntervalSince(start)
+        guard elapsed >= 0.5 else { return bytes }
+        let bytesPerSec = Double(bytesReceived) / elapsed
+        let rate = Self.byteFormatter.string(fromByteCount: Int64(bytesPerSec))
+        return "\(bytes) (\(rate)/s)"
+    }
+
     private var resultAlertTitle: String {
         guard let result else { return "" }
         switch (result.photos, result.files) {
@@ -115,7 +145,7 @@ struct ReceiveView: View {
 
     private func pasteAndReceive() {
         guard let pasted = UIPasteboard.general.string,
-              !pasted.trimmingCharacters(in: .whitespaces).isEmpty
+            !pasted.trimmingCharacters(in: .whitespaces).isEmpty
         else {
             errorMessage = "Clipboard is empty."
             return
@@ -136,7 +166,7 @@ struct ReceiveView: View {
         // `shareddocuments` scheme and the same path as the Documents
         // file:// URL.
         guard let docs = PhotoSaver.documentsDirectory,
-              var components = URLComponents(url: docs, resolvingAgainstBaseURL: false)
+            var components = URLComponents(url: docs, resolvingAgainstBaseURL: false)
         else { return }
         components.scheme = "shareddocuments"
         if let url = components.url {
@@ -149,19 +179,29 @@ struct ReceiveView: View {
         guard !trimmed.isEmpty else { return }
         errorMessage = nil
         result = nil
+        bytesReceived = 0
+        transferStart = Date()
         working = true
 
-        Task.detached {
+        transferTask = Task.detached {
             do {
                 let staging = FileManager.default.temporaryDirectory
                     .appendingPathComponent("beam-staging", isDirectory: true)
-                try? FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+                try? FileManager.default.createDirectory(
+                    at: staging, withIntermediateDirectories: true)
 
-                let staged = try await AtmanBridge.shared.downloadFiles(ticket: trimmed, into: staging)
+                let staged = try await AtmanBridge.shared.downloadFiles(
+                    ticket: trimmed,
+                    into: staging,
+                    onProgress: { bytes in
+                        Task { @MainActor in bytesReceived = bytes }
+                    }
+                )
+                try Task.checkCancellation()
                 let summary = await PhotoSaver.save(stagedFiles: staged)
                 await MainActor.run {
                     if summary.photosSaved == 0 && summary.documentsSaved == 0,
-                       let first = summary.failures.first
+                        let first = summary.failures.first
                     {
                         self.errorMessage = first.localizedDescription
                     } else {
@@ -175,6 +215,8 @@ struct ReceiveView: View {
                     }
                     self.working = false
                 }
+            } catch is CancellationError {
+                await MainActor.run { self.working = false }
             } catch {
                 await MainActor.run {
                     self.errorMessage = error.localizedDescription
@@ -182,5 +224,35 @@ struct ReceiveView: View {
                 }
             }
         }
+    }
+}
+
+/// AirDrop-style transfer modal: circular indeterminate ring + byte
+/// counter with rate + prominent Cancel. Dismisses automatically when
+/// the parent flips `working` back to `false`.
+private struct TransferSheet: View {
+    let label: String
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .scaleEffect(2.0)
+                .padding(.top, 8)
+            Text("Receiving")
+                .font(.headline)
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            Button(role: .cancel, action: onCancel) {
+                Text("Cancel").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 20)
     }
 }
