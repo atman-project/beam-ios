@@ -68,10 +68,19 @@ open Beam.xcodeproj
 
 ## Build Beam for publication
 
-Build `atman` with `--release`, and open `Beam.xcodeproj` as described above.
+### Bump version number
+- Bump the `MARKETING_VERSION` in `project.yml`.
+- Regenerate Xcode project:
+  ```bash
+  DEVELOPMENT_TEAM="YOUR_TEAM_ID" xcodegen generate
+  ```
+- Change the `CFBundleShortVersionString` in `Beam/Info.plist`.
 
-Then in Xcode,
-- Destination: `Any iOS Device (arm64)`
-- Menu: `Product` → `Archive`
-- When Organizer opens: `Distribute App` → `App Store Connect` → `Upload`
-- Xocde signs with the automatic profile tied to the team ID you specified for `xcodegen`.
+### Build Beam
+- Build `atman` with `--release` as introduced above.
+- Open `Beam.xcodeproj` as described above.
+- Then in Xcode,
+  - Destination: `Any iOS Device (arm64)`
+  - Menu: `Product` → `Archive`
+  - When Organizer opens: `Distribute App` → `App Store Connect` → `Upload`
+  - Xcode signs with the automatic profile tied to the team ID you specified for `xcodegen`.
