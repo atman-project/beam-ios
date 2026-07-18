@@ -77,7 +77,10 @@ open Beam.xcodeproj
 - Change the `CFBundleShortVersionString` in `Beam/Info.plist`.
 
 ### Build Beam
-- Build `atman` with `--release` as introduced above.
+- Build atman for ARM64 with release mode:
+  ```bash
+  ./build_atman.sh --arm64 --release
+  ```
 - Open `Beam.xcodeproj` as described above.
 - Then in Xcode,
   - Destination: `Any iOS Device (arm64)`
